@@ -1,0 +1,9 @@
+barf_type=blog # blog, image, log, paste, url
+site_tmp=_tmp # used by hoc on plan 9
+posts_per_page=10
+show_ascending=0
+show_footer=0
+show_header=0
+show_sidebar=0
+require_login=0 # if not logged in, redirect to /login
+allow_anon=1 # allow posts without logging in

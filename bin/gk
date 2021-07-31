@@ -1,0 +1,20 @@
+#!/bin/rc
+# Create an index of known_tags in $werc/sites/$site/known_tags
+if(! ~ $#1 0)
+	base=$1
+if not if(~ $#barf_root 1 && $#barf_base 1)
+	base=$barf_root/$"barf_base
+if not
+	base=`{pwd}
+
+if(test -f $base/_known_tags)
+	rm $base/_known_tags
+for(i in `{cat $base/etc/tags}){
+	grep -e '^.*\/'$i'$' $base/tags |
+	awk -F '/' '{print $3;}' |
+	sort |
+	uniq -c |
+	awk '{print $2 "	" $1;}' >>$base/_known_tags
+}
+if(test -f $base/_known_tags)
+	cp $base/_known_tags $base/known_tags

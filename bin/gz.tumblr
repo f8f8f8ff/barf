@@ -1,0 +1,119 @@
+#!/bin/rc
+# Parse XML RSS feeds into BARF blog posts for the specified site.
+# If a post with a matching _link_ already exists, no new post will
+# be created for that item. Tags will be created according to the rules
+# defined in the get_tags() function.
+#
+# The file argument should point to a file containing one line per feed,
+# with fields separated by the | character, in the following format:
+#
+#	http://feeds.feedburner.com/ImNotReallyStanleyLieber|stanleylieber
+#
+# where the first field is the feed URL and each addition field is a tag.
+#
+# Requires 20h's xmlpull and rssread.
+rfork en
+switch($1){
+case /*
+	feeds=$1
+	site=tumblr.stanleylieber.com
+	tags=()
+case *
+	echo 'Usage: gz file' >[1=2]
+	exit usage
+}
+
+file=/tmp/gz.$pid
+werc=/usr/sl/www/werc
+
+if(test -f /boot/factotum)
+	cmd=hget
+if not
+	cmd='curl -s'
+
+fn cram{
+	ssam '
+,s/^link:.*$/HJDIVIDER&HJDIVIDER/g
+,s/^title:.*$/HJDIVIDER&HJDIVIDER/g
+,s/\n//g
+,s/HJDIVIDERtitle:/\n&/g
+	'
+}
+
+fn scape{
+	ssam '
+,s///g
+,s/\&quot;/\"/g
+,s/\&#34;/\"/g
+,s/\&amp;/\&/g
+,s/\&#38;/\&/g
+,s/\&#39;/''/g
+,s/\&#44;/,/g
+,s/\&#45;/-/g
+,s/\&#46;/\./g
+,s/\&#47;/\//g
+,s/\&#58;/:/g
+,s/\&#59;/;/g
+,s/\&lt;/</g
+,s/\&#60;/</g
+,s/\&#61;/=/g
+,s/\&gt;/>/g
+,s/\&#62;/>/g
+,s/\&#95;/_/g
+,s/\|/\&#124;/g
+	'
+}
+
+fn get_posts{
+	$"cmd $"feed | rssread | cram | scape >$file
+	echo >>$file
+}
+
+fn parse_posts{
+	ifs='
+' {
+		posts=`{cat $file}
+		for(i in `{seq 1 $#posts | sort -nr}){
+			post=$posts($i)
+			if(! ~ $post ''){
+				a_title=`{echo $post | sed 's/^.*HJDIVIDERtitle: //g; s/HJDIVIDER.*$//g'}
+				a_date=`{date}
+				a_link=`{echo $post | sed 's/^.*HJDIVIDERlink:  //g; s/HJDIVIDER.*$//g'}
+				a_body=`{echo $post | sed 's/^.*HJDIVIDER//g; s/^.*HJDIVIDER//g; s/^.*HJDIVIDER//g'}
+				a_id=`{echo `{ls -p $werc/sites/$site/src | sort -n | tail -1}^+1 | bc}
+				if(~ $#a_id 0)
+					a_id=1
+				while(test -d $werc/sites/$site/src/$a_id)
+					a_id=`{echo $a_id^+1 | bc}
+				if(! ~ $"a_link '' && ! grep -s `{echo $"a_link | md5sum} $werc/sites/$site/links){
+					mkdir -p $werc/sites/$site/src/$a_id/tags # big fat race
+					echo $"a_title >$werc/sites/$site/src/$a_id/title
+					echo $"a_date >$werc/sites/$site/src/$a_id/date
+					echo $a_link(1) >$werc/sites/$site/src/$a_id/link
+					echo $a_link(1) | md5sum >>$werc/sites/$site/links
+					if(~ $a_link(1) *staticflickr.com*)
+						echo '<img src="'$"a_link'">' >$werc/sites/$site/src/$a_id/body
+					echo $"a_body '</a></li></ul>' >>$werc/sites/$site/src/$a_id/body
+					ifs=' ' {
+						for(j in $tags){
+							>$werc/sites/$site/src/$a_id/tags/$j
+							echo $a_id/tags/$j >>$werc/sites/$site/tags
+						}
+					}
+				}
+				if(test -f /boot/factotum && ~ $site *.stanleylieber.com && test -d $werc/sites/$site/src/$a_id)
+					chmod +t $werc/sites/$site/src/$a_id $werc/sites/$site/src/$a_id $werc/sites/$site/src/$a_id $werc/sites/$site/src/$a_id/* $werc/sites/$site/src/$a_id $werc/sites/$site/src/$a_id/tags/*
+			}
+		}
+	}
+}
+
+if(test -f /boot/factotum && test -f /rc/bin/hget)
+	webfs
+for(i in `{grep -v -e '^#' $feeds}){
+	feed=`{echo $"i | sed 's/\|.*$//g'}
+	tags=`{echo $"i | sed 's/\|/ /g'}
+	tags=$tags(2-)
+	get_posts
+	parse_posts
+}

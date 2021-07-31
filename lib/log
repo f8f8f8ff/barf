@@ -1,0 +1,55 @@
+fn display_log{
+	if(~ $#logged_user 0)
+		a='<a href="'$base_url^$barf_base_uri'login">login</a>'
+	if not
+		a='<a href="'$base_url^$barf_base_uri'?a_func=edit_form">add</a>'
+	echo '<div>
+	<span id="add">'$"a'</span>
+	<span id="search">
+	<form method="get" action="/">
+	<input type="text" name="tags" size="28">
+	<input type="submit" value="search">
+	</form>
+	</span>
+	</div>
+	</div>
+	<div id="list">
+	<table id="post_table">
+	<tbody>
+	<tr id="blank">
+	<th style="display: none;">&nbsp;</th>
+	<th style="display: none;">&nbsp;</th>
+	<th style="display: none;">&nbsp;</th>'
+	if(check_user && ! ~ $#logged_user 0)
+		echo '<th style="display: none;">&nbsp;</th>'
+	echo '</tr>'
+	get_post_list
+	for(i in `{seq 1 $#posts}){
+		a_id=$posts($i)
+		a_dir=$barf_root/$"barf_dir/src/$a_id
+		echo '<tr>'
+		for(j in $barf_items){
+			echo '<td id="post_'$"j'">'
+			if(~ $j img)
+				print_img
+			if not if(~ $j tags)
+				print_tags
+			if not if(~ $j title)
+				print_title
+			if not
+				cat $a_dir/$j
+			echo '</td>'
+		}
+		if(check_user && ! ~ $#logged_user 0){
+			echo '<td id="post_edit">'
+			print_edit
+			echo '</td>'
+		}
+		echo '</tr>'
+	}
+	echo '</tbody>
+	</table>'
+	display_prevnext
+	echo '<br><br><br><br>
+	</div>'
+}

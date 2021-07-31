@@ -1,0 +1,174 @@
+#!/bin/rc
+# Build static pages for $site.
+rfork e
+fn usage{
+	echo usage: $0 [ domain.com ] >[1=2]
+	exit usage
+}
+if(~ $#1 0)
+	usage
+
+fn conf_enable_barf{ }
+
+werc=/usr/sl/www/werc
+site=$werc/sites/$1
+barf_root=$site
+
+. $site/_werc/config
+. $site/_werc/barf/config
+. $werc/apps/barf/lib/core
+. $werc/apps/barf/lib/$barf_type
+if(test -f $site/_werc/barf/lib/$barf_type)
+	. $site/_werc/barf/lib/$barf_type
+if(~ $show_ascending 1)
+	sort=(sort -nu)
+if not
+	sort=(sort -nru)
+
+fn check_user{ }
+
+fn display_html_footers{
+	echo '</body>
+</html>'
+}
+
+fn display_html_headers{
+	echo '<html>
+<head>
+
+    <title>'$"siteTitle'</title>
+
+    <link rel="stylesheet" href="/_werc/pub/style.css" type="text/css" media="screen" title="default">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/vnd.microsoft.icon">
+    <link rel="alternate" type="application/rss+xml" title="RSS" href="'$"rss'">
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> 
+
+</head>
+<body>
+'
+}
+
+fn display_prevnext{
+	if(~ $#nstart 1){
+		echo '
+		<div id="page_list">
+		<span>
+		'
+		if(test $start -lt $pstop && ! ~ $start $pstart)
+			echo '<a href="'$pstart^'-'^$pstop^'.html">prev</a> | '
+		echo '</span>
+		<span>
+		'
+		if(test $nstart -gt $bposts($#bposts))
+			echo '<a href="'$nstart^'-'^$nstop^'.html">next</a>'
+		echo '
+		</span>
+		</div>
+		'
+	}
+}
+
+fn get_post_list{
+	if(~ $#posts 0){
+		if(~ $id [0-9]*)
+			posts=$id
+		if not{
+			posts=`{
+				if(~ $tags all)
+					ls -p $site/src |
+						grep -e '^[0-9]*$' |
+						eval $sort |
+						sed -n $start^,^$stop^p
+				if not
+					grep -e '^.*\/'$tags'$' $site/tags |
+						awk -F '/' '{print $1;}' |
+						eval $sort |
+						sed -n $start^,^$stop^p
+			}
+			if(! ~ $posts [0-9]*)
+				posts=()
+		}
+	}
+}
+
+fn print{
+	display_html_headers
+	if(~ $show_header 1)
+		display_header
+	display_^$barf_type
+	if(~ $show_sidebar 1)
+		display_sidebar
+	if(~ $show_footer 1)
+		display_footer
+	display_html_footers
+}
+
+fn print_id{
+	echo '<span id="post_id"><a href="'$"a_id'.html">No.'$"a_id'</a></span>'
+}
+
+fn print_tags{
+	a_tags=`{ls -p $a_dir/tags}
+	a_tags=`{for(t in $a_tags) echo '<a href="/tag/'$t'">'$t'</a>, '}
+	a_tags=`{echo $a_tags | awk '{print substr($0, 1, length($0) -1)}'}
+	echo '<span id="post_tags">'$"a_tags'</span>'
+}
+
+fn print_title{
+	a_title=`{cat $a_dir/title}
+	if(! ~ $#a_title 0){
+		if(~ $barf_type log url)
+			echo '<a href="'`{cat $a_dir/link}'">'$"a_title'</a>'
+		if not
+			echo '<a href="'$"a_id'.html">'$"a_title'</a>'
+	}
+}
+
+cd $site
+
+# individual posts
+bposts=`{ls -p $site/src | grep -v private | grep -e '^[0-9]*$' | eval $sort}
+for(b in $bposts){
+	id=$b posts=() print >$b.html
+	echo $"b^'.html' >[1=2]
+}
+
+# paginated posts
+start=$bposts(1)
+stop=`{echo $bposts(1)^-^$posts_per_page | bc}
+pstart=$start
+pstop=$stop
+while(test $start -ge $bposts($#bposts)){
+	if(test $stop -lt $bposts($#bposts))
+		stop=$bposts($#bposts)
+	nstart=`{echo $stop^-^1 | bc}
+	nstop=`{echo $stop^-^$posts_per_page^-1 | bc}
+	pposts=`{
+		for(i in `{seq $stop $start | eval $sort})
+			if(test -d $site/src/$i)
+				echo $i
+	}
+	tags=all posts=$pposts print >$start^-^$stop.html
+	echo $"start^'-'^$"stop^'.html' >[1=2]
+	pstart=$start
+	pstop=$stop
+	start=`{echo $stop^-1 | bc}
+	stop=`{echo $start^-^$posts_per_page | bc}
+}
+cp `{ls [0-9]*-[0-9]*.html | sort -n | tail -1} index.html
+if(test -x /boot/factotum)
+	chmod +t [0-9]*.html [0-9]*-[0-9]*.html index.html
+
+# tags
+for(b in `{awk -F '/' '{print $3;}' tags | sort -u}){
+	btags=$b
+	mkdir -p tag/$btags
+	bposts=`{grep -e '^.*\/'$btags'$' tags | awk -F '/' '{print $1;}' | eval $sort}
+	start=$bposts(1)
+	stop=$bposts($#bposts)
+	tags=all posts=$bposts print >tag/$btags/index.html
+	echo tag/$btags/index.html >[1=2]
+	if(test -x /boot/factotum)
+		chmod +t tag tag/$btags tag/$btags/index.html
+}

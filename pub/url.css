@@ -1,0 +1,195 @@
+/* url.stanleylieber.com */
+
+body {
+	font-family: Vera, Helvetica, Verdana, Arial, Sans-Serif;
+	font-style: normal;
+	padding: 2px 2em;
+	line-height: 1.5em;
+	font-size: 70%;
+	background: #FFFFFF;
+	color: #000000;
+}
+
+a { text-decoration: none; color: #000000; }
+a:hover { background: #EEEEEE;}
+li:hover { background: #EEEEEE; }
+li a:hover { background: #EEEEEE; }
+ul { list-style: none; }
+
+p {
+	font-size : 100%; 
+	font-style : normal; 
+	padding: 0px;
+} 
+
+h2 { font-size : 140%; }
+h3 { font-size: 120%; }
+h4 { font-size: 100%; }
+h2, h3, h1, h4 {
+	margin: 0px 0px;
+	padding: 2px 0px;
+	clear: both;
+}
+
+hr { border: 1px solid #fff; }
+
+input {
+	background-color: #EEEEEE;
+}
+
+code, pre { font-family: Courier, 'Lucida Console','Courier New', Sans-Serif; }
+blockquote, code {
+	background : #eee;
+	padding: 6px;
+	border-left: 3px solid #eee;
+}
+
+td {
+	padding: 10px;
+	border-width: 1px;
+	border-style: solid;
+	border-collapse: collapse;
+	border-color: #000000;
+	background: #FFFFFF;
+}
+
+textarea {
+	height: 300px;
+	background-color: #EEEEEE;
+}
+
+tr {
+	border-width: 1px;
+	border-style: solid;
+	border-collapse: collapse;
+	border-color: #000000;
+}
+
+#add {
+	position: relative;
+	top: 65px;
+	left: 9%;
+	font-size: 10pt;
+}
+
+#blank {
+	border-width: 1px;
+	border-style: solid;
+	border-collapse: collapse;
+	border-color: #FFFFFF;
+}
+
+#bottom { 
+	float: bottom;
+	position: absolute;
+	bottom: 0px;
+	left: 0px;
+	right: 0px;
+	width: 100%;
+}
+
+#center {
+	position: relative;
+	margin-left: auto;
+	margin-right: auto;
+	top: 130px;
+	width: 90%;
+	height: 100%;
+}
+
+#edit {
+	width: 750px;
+	font-size: 10pt;
+}
+
+#footer {
+	position: relative;
+	margin-left: auto;
+	margin-right: auto;
+	bottom: 100px;
+}
+
+#header {
+	position: relative;
+	margin-left: auto;
+	margin-right: auto;
+	top: 40px;
+	width: 83%;
+}
+
+#logo { font-size: 40pt; color: #DDDDDD; }
+#logo a { font-size: 40pt; color: #CCCCCC; }
+#logo a:hover { background: #EEEEEE;}
+
+#list {
+	position: relative;
+	margin-left: auto;
+	margin-right: auto;
+	top: 90px;
+	width: 90%;
+	height: 100%;
+}
+
+#meta { font-size: 8pt; }
+
+#page_list {
+	margin: 20px;
+	text-align: right;
+	font-size: 9pt;
+}
+
+#post {
+	position: relative;
+	padding: 20px;
+}
+
+#post_meta { text-align: center; }
+
+#post_date {
+	width: 200px;
+	text-align: center;
+	font-size: 8pt;
+}
+
+#post_edit {
+	width: 100px;
+	text-align: center;
+	font-size: 8pt;
+}
+
+#post_table {
+	position: relative;
+	margin-left: auto;
+	margin-right: auto;
+	padding: 0px;
+	width: 100%;
+	border-collapse: collapse;
+}
+
+#post_tags {
+	text-align: left;
+	font-size: 8pt;
+}
+
+#post_title {
+	text-align: left;
+	font-size: 10pt;
+}
+
+#search {
+	position: absolute;
+	top: 90px;
+	right: 9%;
+	font-size: 10pt;
+}
+
+#top {
+	float: top;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	right: 0px;
+	height: 100px;
+	width: 100%;
+}
+

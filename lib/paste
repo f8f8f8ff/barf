@@ -1,0 +1,50 @@
+fn add_post{
+	redirect_bots
+	a_date=`{date}
+	edit_post
+}
+
+fn display_paste{
+	echo '<div id="center">'
+	if(~ $allow_anon 1 || {check_user && ! ~ $#logged_user 0}){
+		echo '<div id="paste">
+		<p>
+		<form method="post" action="/">
+		<input type="hidden" name="fake" value="fake">
+		<input type="text" name="url" style="display: none;">
+		<input type="hidden" name="a_func" value="add_post">
+		<textarea name="a_body" id="paste_box"></textarea><br>
+		<input type="submit" name="submit" value="submit" id="paste_submit">
+		</form>
+		</div>'
+	}
+	echo '<p>
+	<div id="posts">'
+	get_post_list
+	for(i in `{seq 1 $#posts}){
+		a_id=$posts($i)
+		a_dir=$barf_root/$"barf_dir/src/$a_id
+		echo '<div id="post">
+		<div id="post_meta">'
+		date=`{cat $a_dir/date}
+		echo '<span id="post_date">
+		<a href="/src/'$"a_id'/body" target="_b">'$"date'</a>
+		</span>'
+		if(check_user && ! ~ $#logged_user 0){
+			echo ' | <span id="post_edit">'
+			print_edit
+			echo '</span>'
+		}
+		echo '</div>
+		<div id="post_body">'
+		txt_handler $barf_root/$"barf_dir/src/$a_id/body 
+		echo '</div>
+		</div>
+		<br>'
+	}
+	display_prevnext
+	echo '<br><br><br><br>
+	</div>
+	</div>
+	</div>'
+}

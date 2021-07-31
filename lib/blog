@@ -1,0 +1,43 @@
+fn display_blog{
+	echo '<div id="center">
+	<div id="posts">'
+	get_post_list
+	for(i in `{seq 1 $#posts}){
+		a_id=$posts($i)
+		a_dir=$barf_root/$"barf_dir/src/$a_id
+		echo '<div id="post">
+		<div id="post_title">'
+		print_title
+		echo '</div>
+		<div id="post_meta">'
+		link=`{cat $a_dir/link}
+		echo '<span id="post_link">
+		<a href="'$"link'" target="_b">link</a>
+		</span>
+		| <span id="post_tags">'
+		print_tags
+		echo '</span>
+		| <span id="post_date">'
+		cat $a_dir/date
+		echo '</span>'
+		print_id
+		if(check_user && ! ~ $#logged_user 0){
+			echo ' | <span id="post_edit">'
+			print_edit
+			echo '</span>'
+		}
+		echo '</div>
+		<div id="post_body">'
+		cat $a_dir/body
+		if(~ $show_disqus 1 && ! ~ $#id 0)
+			cat $barf_root/_werc/barf/disqus
+		echo '</div>
+		</div>
+		<br>'
+	}
+	display_prevnext
+	echo '<br><br><br>
+	</div>
+	</div>
+	</div>'
+}

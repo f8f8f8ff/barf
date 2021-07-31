@@ -1,0 +1,56 @@
+fn display_rss{
+	echo '<?xml version="1.0" encoding="UTF-8"?>'
+	echo '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">'
+	echo '<channel>'
+	echo '<atom:link href="'$base_url^$req_path'" rel="self" type="application/rss+xml" />'
+	echo '<title><![CDATA['$"siteTitle']]></title>'
+	echo '<link>'$base_url^$barf_base_uri'</link>'
+	echo '<description><![CDATA['$"blogDesc']]></description>'
+	echo '<generator><![CDATA[barf]]></generator>'
+	echo '<lastBuildDate>'
+	ndate -m `{date `{mtime $barf_root/$"barf_dir/src | awk '{print $1}'}}	# rfc2822 last time channel content changed.
+	echo -n '</lastBuildDate>'
+	echo '<language>en-us</language>'
+	date=`{ndate -m}	# rfc2822 publication date for content in the channel.
+	get_post_list
+	for(i in `{seq 1 $#posts}){
+		a_id=$posts($i)
+		a_dir=$barf_root/$"barf_dir/src/$a_id
+		echo '<item>'
+		echo '<guid isPermaLink="true">'$base_url^$barf_base_uri'?id='$"a_id'</guid>'
+		echo '<pubDate>'$"date'</pubDate>'
+		title=`{cat $a_dir/title}
+		if(~ $title '')
+			ntitle=($siteTitle $"a_id)
+		if not
+			ntitle=$title
+		echo '<title>'$"ntitle'</title>'
+		echo '<link>'$base_url^$barf_base_uri'?id='$"a_id'</link>'
+		echo '<description><![CDATA['
+		if(~ $obarf_type image){
+			if(! ~ $#a_link 0)
+				link=$"a_link
+			if not
+				link=$base_url^$barf_base_uri'?id='$"a_id
+			echo '<p>source: <a href="'$"link'">link</a></p>'
+		}
+		a_tags=`{ls -p $a_dir/tags}
+		if(! ~ $#a_tags 0){
+			echo '<p>tags: '
+			print_tags
+			echo '</p>'
+			echo '<p>'
+		}
+		# begin ugly if statements
+		if(~ $obarf_type paste)
+			echo '<pre>'
+		if(! ~ $obarf_type image)
+		cat $a_dir/body
+		if(~ $obarf_type paste)
+			echo '</pre>'
+		if(~ $obarf_type image)
+			print_img
+		echo '</p>]]></description></item>'
+	}
+	echo '</channel></rss>'
+}

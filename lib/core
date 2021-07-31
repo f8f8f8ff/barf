@@ -1,0 +1,414 @@
+fn delete_post{
+	a_dir=$barf_root/$"barf_dir/src/$a_id
+	if(test -d $a_dir){
+		rm -rf $a_dir &&
+		{echo ',x/^'$a_id'\/.*\n/d'; echo w; echo q} | sam -d $barf_root/$"barf_dir/tags >[2]/dev/null
+	}
+	post_redirect $base_url^$barf_base_uri
+}
+
+fn display_footer{
+	if(test -f $barf_root/$"barf_dir/_werc/barf/footer)
+		cat $barf_root/$"barf_dir/_werc/barf/footer
+	if not if(test -f $barf_root/_werc/barf/footer)
+		cat $barf_root/_werc/barf/footer
+	if not
+		cat apps/barf/barf/footer
+}
+
+fn display_header{
+	if(test -f $barf_root/$"barf_dir/_werc/barf/header)
+		cat $barf_root/$"barf_dir/_werc/barf/header
+	if not if(test -f $barf_root/_werc/barf/header)
+		cat $barf_root/_werc/barf/header
+	if not
+		cat apps/barf/barf/header
+}
+
+fn display_login{
+	echo '<div id="login">
+	<form method="post" action="/">
+	<input type="hidden" name="a_func" value="login">
+	username: <input type="text" name="user_name"><br> 
+	password: <input type="password" name="user_password"><br> 
+	<input name="s" type="submit" value="login"> 
+	</form>
+	</div>'
+}
+
+fn display_prevnext{
+	if(test $stop -gt `{echo 1+^$posts_per_page | bc}){
+		nprev=`{echo $start^-1-^$posts_per_page | bc}
+		prev='<span>
+		<a href="'$base_url^$barf_base_uri'?tags='$"tags'&start='$"nprev'">prev</a> | 
+		</span>'
+	}
+	if(test $#posts -gt $posts_per_page){
+		nnext=`{echo $stop^+1 | bc}
+		next='<span>
+		<a href="'$base_url^$barf_base_uri'?tags='$"tags'&start='$"nnext'">next</a>
+		</span>'
+	}
+	echo '<div id="page_list">
+	'$"prev'
+	'$"next'
+	</div>'
+}
+
+fn display_sidebar{
+	if(test -f $barf_root/$"barf_dir/_werc/barf/sidebar)
+		cat $barf_root/$"barf_dir/_werc/barf/sidebar
+	if not if(test -f $barf_root/_werc/barf/sidebar)
+		cat $barf_root/_werc/barf/sidebar
+	if not
+		cat apps/barf/barf/sidebar
+}
+
+fn dsrc{
+	low=`{ls -p $barf_root/$"barf_dir/src | sort -n | sed 1q}
+	high=$a_id
+	if(~ $#low 1 && ~ $#high 1){
+		cd $barf_root/$"barf_dir/src && rm -rf `{seq $low $high} &&
+		{
+			for(i in `{seq $low $high})
+				echo ',x/^'$i'\/.*\n/d'
+			echo w
+			echo w
+			echo q
+		} | sam -d $barf_root/$"barf_dir/tags >[2]/dev/null
+	}
+	post_redirect $base_url^$barf_base_uri
+}
+
+fn edit_form{
+	if(~ $#a_id 0)
+		name=add
+	if not{
+		name=update
+		a_dir=$barf_root/$"barf_dir/src/$a_id
+		for(x in $barf_items){
+			if(~ $x img)
+				a_img=`{ls -p $a_dir/img | sed 1q}
+			if(~ $x tags)
+				a_tags=`{ls -p $a_dir/tags}
+			if not
+				$x=`{cat $a_dir/$x}
+		}
+	}
+	echo '<div id="list">
+	<form action="/" method="post" name="edit" id="button">
+	<input type="hidden" name="fake" value="fake">
+	<input type="text" name="url" style="display: none;">
+	<input type="hidden" name="a_func" value="edit_post">'
+	if(~ $name update)
+		echo '<input type="hidden" name="a_id" value="'$"a_id'">'
+	for(x in $barf_items){
+		if(~ $x body){
+			echo '<div id="edit_body">' \
+			'body:<br>' \
+			'<textarea name="a_body">'
+			if(~ $name update)
+				cat $a_dir/body
+			echo '</textarea></div>'
+		}
+		if not if(~ $x img){
+			echo '<div id="edit_img">' \
+			'image:<br>' \
+			'<input name="a_img"  type="text" value="'$"a_img'" id="edit"> &nbsp;&nbsp;' \
+			'download: <input name="a_download" type="checkbox" value="1">' \
+			'</div>'
+		}
+		if not if(~ $x tags){
+			echo '<div id="edit_tags">' \
+			'tags: &nbsp;&nbsp;(space separated list of tags)<br>' \
+			'<input name="a_tags" type="text" value="'$"a_tags'" id="edit">' \
+			'</div>'
+		}
+		if not{
+			echo '<div id="edit_'$"x'">' \
+			$"x':<br>' \
+			'<input name="a_'$"x'" type="text" value="'$"$x'" id="edit">' \
+			'</div>'
+		}
+	}
+	echo '<div id="edit_submit">' \
+	'<input type="submit" name="'$name'" value="'$name'">' \
+	'</div>
+	</form>
+	</div>'
+}
+
+fn edit_post{
+	if(~ $#a_id 0){
+		a_id=`{echo `{ls -p $barf_root/$"barf_dir/src | sort -n | tail -1}^+1 | bc}
+		if(~ $#a_id 0)
+			a_id=1
+		while(test -d $barf_root/$"barf_dir/src/$a_id)
+			a_id=`{echo $a_id^+1 | bc}
+	}
+	a_dir=$barf_root/$"barf_dir^src/$a_id
+	mkdir -p $a_dir/img $a_dir/tags
+	rm -f $a_dir/tags/*
+	for(x in $barf_items){
+		if(~ $x date){
+			if(! ~ $#a_date 0)
+				echo $"a_date >$a_dir/date
+			if not
+				date >$a_dir/date
+		}
+		if not if(~ $x tags){
+			if(! ~ $#a_tags 0){
+				a_tags=`{echo $"a_tags | sed 's/[^A-Za-z0-9_\- ]//g'}
+				ifs=' '{a_tags=`{echo -n $a_tags}}
+				{
+					t=1
+					while(test $t -le $#a_tags){
+						>$a_dir/tags/$a_tags($t)
+						t=`{echo $t^+1 | bc}
+					}
+				}
+				for(i in $a_tags)
+					echo $a_id'/tags/'$i >>$barf_root/$"barf_dir/tags
+			}
+		}
+		if not if(! ~ $x img tags){
+			item='a_'$"x
+			if(! ~ $$item ''){
+				>$a_dir/$x
+				echo $$item >$a_dir/$x
+			}
+		}
+	}
+	if(~ $a_download 1){
+		switch($barf_type){
+		case image
+			rm -f $a_dir/img/*
+			img=$a_dir/img/^`{date -n}^.^`{echo $"a_img |
+				sed 's/^.*\.(gif|GIF)$/gif/g;
+					s/^.*\.(jpg|jpeg|JPG|JPEG)$/jpg/g;
+					s/^.*\.(png|PNG)$/png/g;
+					s/^.*\.(tif|TIF|tiff|TIFF)$/tif/g'
+			}
+			thumb=$a_dir/img/small.^`{basename $img | sed 's/\..*$//g'}^.png
+			if(test -f /boot/factotum){
+				@{
+				rfork n
+				if(test -f /rc/bin/hget)
+					webfs
+				hget $"a_img >$img
+				#magick/convert $img -resize 500x600 $thumb
+				switch($img){
+				case *.bmp
+					cmd=bmp
+				case *.gif
+					cmd=gif
+				case *.ico
+					cmd=ico
+				case *.jpg
+					cmd=jpg
+				case *.png
+					cmd=png
+				case *.tif
+					cmd=tif
+				case *.tga
+					cmd=tga
+				}
+				$cmd -9et <$img | resample -x 500 | topng >$thumb
+				}
+			}
+			if not{
+				curl -s -o $"a_img >$img
+				convert $img -resize 500x600 $thumb
+			}
+		case url
+			if(test -f /boot/factotum){
+				@{
+				rfork n
+				if(test -f /rc/bin/hget)
+					webfs
+				hget $"a_link | htmlfmt | fmt >$a_dir/body
+				}
+			}
+			if not
+				curl -s $"a_link | htmlfmt | fmt >$a_dir/body
+		}
+	}
+	if(! ~ $gp 1)
+		post_redirect $base_url^$barf_base_uri
+}
+
+fn get_post_list{
+	if(~ $id [0-9]*)
+		posts=$id
+	if not{
+		posts=`{
+			if(~ $show_ascending 1)
+				sort=(sort -n)
+			if not
+				sort=(sort -nr)
+			if(~ $tags all)
+				ls -p $barf_root/$"barf_dir/src |
+					grep -e '^[0-9]*$' |
+					eval $sort |
+					sed -n $start^,^$stop^p # awk 'NR=='$start',NR=='$stop' {print;}'
+			if not
+				grep -e '^.*\/'$tags'$' $barf_root/$"barf_dir/tags |
+					awk -F '/' '{print $1;}' |
+					eval $sort |
+					uniq |
+					sed -n $start^,^$stop^p
+		}
+		if(! ~ $posts [0-9]*)
+			posts=()
+	}
+}
+
+fn get_start{
+	if(~ $#start 0)
+		start=1
+}
+
+fn get_stop{
+	if(~ $#stop 0)
+		stop=`{echo $start^+^$posts_per_page | bc}
+}
+
+fn get_tags{
+	if(~ $#tags 0)
+		tags=all
+}
+
+fn load_get_args{
+	if(~ $REQUEST_METHOD GET && ~ $#get_args 0 && ~ $REQUEST_URI *'='*){
+		ifs='&' {
+			a=`{echo $"REQUEST_URI | sed 's/(^\/|#.*$)//g'}
+			for(pair in $a){
+				ifs='=' { pair=`{echo -n $pair} }
+					n='get_arg_'^`{echo $pair(1) | urldecode | tr -cd 'a-zA-Z0-9_'}
+					get_args=( $get_args $n )
+					ifs=() { $n=`{echo -n $pair(2) | urldecode | tr -d ''} }
+			}
+		}
+		pair=()
+	}
+}
+
+fn parse_get_args{
+	if(! ~ $#get_arg_a_func 0)
+		a_func=$get_arg_a_func
+	if(! ~ $#get_arg_a_id 0)
+		a_id=$get_arg_a_id
+	if(! ~ $#get_arg_id 0)
+		id=$get_arg_id
+	if(! ~ $#get_arg_start 0)
+		start=$get_arg_start
+	if(! ~ $#get_arg_stop 0)
+		stop=$get_arg_stop
+	if(! ~ $#get_arg_reply 0)
+		reply=$get_arg_reply
+	if(! ~ $#get_arg_tags 0)
+		tags=$get_arg_tags
+}
+
+fn parse_post_args{
+	for(x in $barf_items){
+		a='a_'$"x
+		p='post_arg_'$"a
+		$a=$$p
+	}
+	if(! ~ $#post_arg_a_download 0)
+		a_download=$post_arg_a_download
+	if(! ~ $#post_arg_a_func 0)
+		a_func=$post_arg_a_func
+	if(! ~ $#post_arg_fake 0)
+		fake=$post_arg_fake
+	if(! ~ $#post_arg_a_id 0)
+		a_id=$post_arg_a_id
+	if(! ~ $#post_arg_url 0)
+		url=$post_arg_url
+}
+
+fn print_edit{
+	edit='<a href="'$base_url^$barf_base_uri'?a_func=edit_form&a_id='$"a_id'">edit</a>'
+	delete='<a href="'$base_url^$barf_base_uri'?a_func=delete_post&a_id='$"a_id'" onclick="return confirm(''are you sure you want to delete?'');">delete</a>'
+	dsrc='<a href="'$base_url^$barf_base_uri'?a_func=dsrc&a_id='$"a_id'" onclick="return confirm(''are you sure you want to dsrc?'');">dsrc</a>'
+	echo $"edit' | '$"delete' | '$"dsrc
+}
+
+fn print_id{
+	echo '<span id="post_id"><a href="/?id='$"a_id'">No.'$"a_id'</a></span>'
+}
+
+fn print_img{
+	a_img=`{ls -p $a_dir/img/[0-9]*}
+	a_thumb=`{ls -p $a_dir/img/small*}
+	if(! ~ $#a_img 0)
+		if(~ $#a_thumb 0)
+			a_thumb=$a_img
+	echo '<a href="'$base_url^$barf_base_uri'src/'$a_id'/img/'$a_img'" target="_b"><img src="'$base_url^$barf_base_uri'src/'$a_id'/img/'$a_thumb'" border="0"></a>'
+}
+
+fn print_tags{
+	a_tags=`{ls -p $a_dir/tags}
+	a_tags=`{for(t in $a_tags) echo '<a href="'$base_url^$barf_base_uri'?tags='$t'">'$t'</a>, '}
+	a_tags=`{echo $a_tags | awk '{print substr($0, 1, length($0) -1)}'}
+	echo '<span id="post_tags">'$"a_tags'</span>'
+}
+
+fn print_title{
+	a_title=`{cat $a_dir/title}
+	if(! ~ $#a_title 0){
+		if(~ $barf_type log url)
+			echo '<a href="'`{cat $a_dir/link}'">'$"a_title'</a>'
+		if not
+			echo '<a href="'$base_url^$barf_base_uri'?id='$"a_id'">'$"a_title'</a>'
+	}
+}
+
+fn redirect_bots{
+	if(! ~ $fake fake || ! ~ $url '')
+		post_redirect http://google.com
+}
+
+fn urldecode {
+awk '
+BEGIN {
+    hextab ["0"] = 0; hextab ["8"] = 8;
+    hextab ["1"] = 1; hextab ["9"] = 9;
+    hextab ["2"] = 2; hextab ["A"] = hextab ["a"] = 10
+    hextab ["3"] = 3; hextab ["B"] = hextab ["b"] = 11;
+    hextab ["4"] = 4; hextab ["C"] = hextab ["c"] = 12;
+    hextab ["5"] = 5; hextab ["D"] = hextab ["d"] = 13;
+    hextab ["6"] = 6; hextab ["E"] = hextab ["e"] = 14;
+    hextab ["7"] = 7; hextab ["F"] = hextab ["f"] = 15;
+}
+{
+    decoded = ""
+    i = 1
+    len = length ($0)
+    while ( i <= len ) {
+        c = substr ($0, i, 1)
+        if ( c == "%" ) {
+            if ( i+2 <= len ) {
+                c1 = substr ($0, i+1, 1)
+                c2 = substr ($0, i+2, 1)
+                if ( hextab [c1] == "" || hextab [c2] == "" ) {
+                    print "WARNING: invalid hex encoding: %" c1 c2 | "cat >&2"
+                } else {
+                    code = 0 + hextab [c1] * 16 + hextab [c2] + 0
+                    c = sprintf ("%c", code)
+                    i = i + 2
+                }
+            } else {
+                print "WARNING: invalid % encoding: " substr ($0, i, len - i)
+            }
+        } else if ( c == "+" ) {
+            c = " "
+        }
+        decoded = decoded c
+        ++i
+    }
+    printf "%s", decoded
+}
+'
+}

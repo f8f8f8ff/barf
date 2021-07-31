@@ -1,0 +1,31 @@
+#!/bin/rc
+# 2016-05-01T18:47:42-0400
+# Delete posts $low through $high.
+rfork e
+dhost=ur.inri.net
+fn usage {
+	echo usage: dsrc [ -r n ] [ -t n ] >[1=2]
+	exit usage
+}
+switch($1){
+case -r
+	site=/usr/sl/www/werc/sites/read.stanleylieber.com
+case -t
+	site=/usr/sl/www/werc/sites/tumblr.stanleylieber.com
+case *
+	usage
+}
+if(! ~ $sysname ur){
+	rcpu -h $dhost -c dsrc $*
+	exit
+}
+low=`{ls -p $site/src | sort -n | sed 1q}
+high=$2
+cd $site/src && rm -rf `{seq $low $high}
+{
+for(i in `{seq $low $high})
+	echo ',x/^'$i'\/.*\n/d'
+echo w
+echo w
+echo q
+} | sam -d $site/tags >[2]/dev/null

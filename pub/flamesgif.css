@@ -1,0 +1,77 @@
+/* flamesgif.com */
+body {
+	color: black;
+	background-color: silver;
+	font-family: 'Lucida Sans Unicode', 'Lucida Sans', 'Lucida Grande', 'Bitstream Sans Vera', Sans-Serif;
+	font-size: 84%;  /* Enables font size scaling in MSIE */
+	margin: 0;
+	padding: 0;
+}
+a { text-decoration: none; color: blue; }
+a:hover { color: purple;}
+blockquote {
+	border-left: none;
+	font-style: none;
+	background-color: silver;
+}
+li:hover { color: purple }
+li a { color: blue }
+li a:hover { color: purple; }
+h1 { font-size: 10pt; }
+h2, h3, h1, h4 { color : blue; }
+hr {
+	border-width: 0px 0px 0.1em 0px;
+	border-color: transparent;
+}
+input , textarea, select, option { background-color: blue; border: none; }
+pre, code, blockquote {
+	font-family: Courier, 'Lucida Console','Courier New', Serif;
+	margin-left: 2em; 
+	font-size: 1.2em;
+}
+table { border: none; }
+th {
+	background-color: transparent;
+	border: none;
+	 text-align: center;
+}
+td {
+	background-color: transparent;
+	border: none;
+}
+ul { list-style: none; padding-left: 0px; margin: 0px }
+#center {
+	width: 600px;
+	margin-left: auto;
+	margin-right: auto;
+}
+#center h1 { font-size 9pt; }
+#footer {
+	font-size: 8pt;
+	background-color: silver;
+	color: blue;
+	margin-left: auto;
+	margin-right: auto;
+}
+#footer a { color: blue; text-decoration: none; }
+#footer a:hover { color: purple; text-decoration: none; }
+#footer table {  font-size: 8pt; }
+#right {
+	float: right;
+	position: absolute;
+	top: 210px;
+	right: 1px;
+	width: 25%;
+	height: 100%;
+	list-style: none;
+}
+#sidebar {
+	position: relative;
+	z-index: 100;
+	width: 95%;
+	top: 10px;
+	right: 10px;
+	left: 10px;
+	margin: 2px;
+	background: silver;
+}

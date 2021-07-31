@@ -1,0 +1,68 @@
+fn add_post{
+	redirect_bots
+	a_download=1
+	edit_post
+}
+
+fn display_image{
+	echo '<div id="center">'
+	if(~ $allow_anon 1 || {check_user && ! ~ $#logged_user 0}){
+		echo '<div id="upload">
+		<form method="post" action="/">
+		<input type="hidden" name="fake" value="fake">
+		<input type="text" name="url" style="display: none;">
+		<input type="hidden" name="a_func" value="add_post">
+		<div id="upload_heading">/'$tags'/</div>
+		<table id="upload_table">
+		<tr><td id="upload_label">Image</td><td><input type="text" name="a_img"  id="upload_input"></td></tr>
+		<tr><td id="upload_label">Link</td><td><input type="text" name="a_link"  id="upload_input"></td></tr>
+		<tr><td id="upload_label">Tags</td><td><input type="text" name="a_tags"  id="upload_tags">
+		<input type="submit" name="submit" value="add" id="upload_submit"></td></tr>
+		</table>
+		</form>
+		<table align="center">
+		<tr>
+		<td>
+		<p>
+		<li id="upload_meta">Supported file types are: GIF, JPG, PNG</li>
+		<li id="upload_meta">Images greater than 500x600 pixels will be thumbnailed.</li>
+		</td>
+		</tr>
+		</table>
+		</div>'
+	}
+	echo '<div id="center_body">'
+	get_post_list
+	for(i in `{seq 1 $#posts}){
+		a_id=$posts($i)
+		a_dir=$barf_root/$"barf_dir/src/$a_id
+		echo '<div id="post">
+		<div id="post_meta">
+		<span id="post_link">'
+		link=`{cat $a_dir/link}
+		echo '<a href="'$"link'">link</a>
+		</span> |
+		<span id="post_tags">'
+		print_tags
+		echo '</span> |
+		<span id="post_date">'
+		cat $a_dir/date
+		echo '</span>'
+		if(check_user && ! ~ $#logged_user 0){
+			echo '| <span id="post_edit">'
+			print_edit
+			echo '</span>'
+		}
+		echo '</div>
+		<div id="post_img">'
+		print_img
+		echo '</div>
+		</div>
+		<br><br>'
+	}
+	display_prevnext
+	echo '<br><br><br><br>
+	</div>
+	</div>
+	</div>'
+}

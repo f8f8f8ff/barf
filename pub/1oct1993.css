@@ -1,0 +1,63 @@
+/* 1oct1993 */
+body {
+	color: #FFFFFF;
+	background-color: #000000;
+	font-family: 'Lucida Sans Unicode', 'Lucida Sans', 'Lucida Grande', 'Bitstream Sans Vera', Sans-Serif;
+	font-size: 84%;  /* Enables font size scaling in MSIE */
+	margin: 0;
+	padding: 0;
+}
+a { text-decoration: none; color: #00ADEF; }
+a:hover { color: #00ADEF; text-decoration: none; }
+li:hover { color: #00ADEF; text-decoration: none; }
+li a { color: #00ADEF }
+li a:hover { color: #00ADEF; text-decoration: none; }
+li ul { padding-left: 0.6em !important; }
+h1 { font-size: 10pt; font-weight: normal; }
+h2 { font-size: 9pt; font-weight: normal; }
+input , textarea, select, option { background-color: #00ADEF; border: none; }
+table { border: none; }
+tr { background-color: transparent; }
+th {
+	background-color: transparent;
+	border: none;
+	 text-align: center;
+}
+td {
+	background-color: transparent;
+	border: none;
+}
+
+hr {
+	border-width: 0px 0px 0.1em 0px;
+	border-color: transparent;
+}
+pre, code, blockquote {
+	font-family: Courier, 'Lucida Console','Courier New', Serif;
+	margin-left: 2em; 
+	font-size: 1.2em;
+}
+blockquote {
+	border-left: none;
+	font-style: none;
+	background-color: #00ADEF;
+}
+#header { flex-basis: 100%; }
+#header tr { background-color: transparent; }
+#center {
+	width: 500px;
+	margin-left: auto;
+	margin-right: auto;
+}
+#center h1 { font-size 9pt; }
+#footer {
+	font-size: 8pt;
+	background-color: #000000;
+	color: #00ADEF;
+	margin-left: auto;
+	margin-right: auto;
+}
+#footer a { color: #00ADEF; text-decoration: none; }
+#footer a:hover { color: #00ADEF; text-decoration: none; }
+#footer table {  font-size: 8pt; }
+#footer tr { background-color: transparent; }

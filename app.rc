@@ -1,0 +1,80 @@
+fn conf_enable_barf{
+	barf_base_uri=$conf_wd
+	barf_root=`{pwd}
+	conf_enable_app barf
+}
+
+fn barf_init{
+	p=`{echo $req_path | sed 's!^'^$barf_base_uri^'!!'}
+	barf_dir=`{basename -d $"p | sed 's!^\.$!!'}
+	barf_items=`{cat $barf_root/_werc/barf/items}
+	. ./apps/barf/lib/core
+	. ./apps/barf/barf/config
+	. $barf_root/_werc/barf/config
+	. ./apps/barf/lib/$barf_type
+	if(test -f $barf_root/_werc/barf/lib/$barf_type)
+		. $barf_root/_werc/barf/lib/$barf_type
+	if(~ $require_login 1 && ! ~ $req_path $barf_base_uri^login){
+		check_user
+		if(~ $#logged_user 0)
+			post_redirect /login
+	}
+	if(~ $REQUEST_METHOD GET && ~ $REQUEST_URI *'='*){
+		load_get_args
+		parse_get_args
+	}
+	if(~ $REQUEST_METHOD POST)
+		parse_post_args
+	if(~ $a_func add_post){
+		if(~ $allow_anon 1 || {check_user && ! ~ $#logged_user 0})
+			add_post
+			post_redirect /
+	}
+	if(~ $a_func edit_post delete_post dsrc){
+		if(check_user && ! ~ $#logged_user 0){
+			switch($a_func){
+			case edit_post
+				edit_post
+			case delete_post
+				delete_post
+			case dsrc
+				dsrc
+			}
+		}
+	}
+	get_start
+	get_stop
+	get_tags
+	if(~ $req_path $barf_base_uri){
+		extraHeaders=$"extraHeaders ^ \
+'<link rel="alternate" type="application/rss+xml" title="RSS" href="'$base_url^$barf_base_uri'index.rss" />'
+		handler_body_main=(tpl_handler `{barf_template barf})
+	}
+	if not if(~ $req_path $barf_base_uri^index.rss){
+		obarf_type=$barf_type	# disgusting hack. fix!
+		barf_type=rss
+		. ./apps/barf/lib/rss
+		barf_setup_feed_handlers barf.tpl 'text/xml; charset=utf-8'
+	}
+	if not if(~ $req_path $barf_base_uri^login){
+		barf_type=login
+		handler_body_main=(tpl_handler `{barf_template barf})
+	}
+}
+
+fn barf_setup_feed_handlers{
+	handler_body_main=NOT_USED_by_barf_feeds
+	res_tail=()
+	http_content_type=$2
+	headers=()
+	master_template=apps/barf/lib/$1
+}
+
+fn barf_template{
+	if(test -f $barf_root/$"barf_dir/_werc/barf/lib/$1.tpl)
+		echo -n $barf_root/$"barf_dir/_werc/barf/lib/$1.tpl
+	if not if(test -f $barf_root/_werc/barf/lib/$1.tpl)
+		echo -n $barf_root/_werc/barf/lib/$1.tpl
+	if not
+		get_lib_file barf/$1.tpl apps/barf/lib/$1.tpl
+}

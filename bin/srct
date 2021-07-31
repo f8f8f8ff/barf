@@ -1,0 +1,4 @@
+#!/bin/rc
+# do not store these files in the worm
+fn f{ du -a $* | sed 's/^.*	//g' }
+for(i in `{f $1}){ chmod +t $i }

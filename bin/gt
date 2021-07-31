@@ -1,0 +1,23 @@
+#!/bin/rc
+# Create an index of tags in $werc/sites/$site/tags. BULGE
+# greps this index when running a search on a given tag.
+# This file is also maintained by the bin/g* commands, or
+# when adding posts through the web interface.
+if(! ~ $#1 0)
+	base=$1
+if not if(~ $#barf_root 1 && $#barf_base 1)
+	base=$barf_root/$"barf_base
+if not
+	base=`{pwd}
+
+if(test -f $base/_tags)
+	rm $base/_tags
+builtin cd $base/src
+ls -p |
+sort -n |
+xargs du -a |
+sed 's/^.*	//g' |
+grep -e '^[0-9]*\/tags' |
+grep -v -e '^.*\/tags$' >>$base/_tags
+if(test -s $base/_tags)
+	cp $base/_tags $base/tags

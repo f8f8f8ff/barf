@@ -1,0 +1,158 @@
+BARF - emit HTML
+
+DESCRIPTION
+	BARF utilizes rc(1) and command line tools to compile a structured
+	directory of files into a single page of HTML. Tagging and RSS 2.0
+	feeds have been implemented.
+
+SETUP
+	To enable BARF, add:
+
+		conf_enable_barf
+
+	to _werc/config under the site root.
+
+	To configure BARF, copy or create the following files under the site
+	root (example files have been included in this distribution):
+
+	_werc/barf/config
+		A list of variables that control various site options:
+
+			barf_type=paste # blog, image, log, paste
+			posts_per_page=10
+			show_ascending=0
+			show_footer=0
+			show_header=0
+			show_sidebar=0
+			require_login=0 # if not logged in, redirect to /login
+			allow_anon=1 # allow posts without logging in
+			show_disqus=0 # include disqus comments template
+					# from _werc/barf/disqus
+
+	_werc/barf/footer
+		HTML or markdown that will appear as the foot of
+		the BARF content area.
+
+	_werc/barf/header
+		HTML or markdown that will appear at the head of
+		the BARF content area.
+
+	_werc/barf/sidebar
+		HTML or markdown that will appear on one side of
+		the BARF content area.
+
+	Finally, sample stylesheets are provided in the directory
+	pub/. Copy any of these to _werc/pub/style.css to try
+	them out.
+
+POSTS
+	Posts are stored in the directory src/ relative to the
+	site root.
+
+	Directory names in src/ that do not match the regular
+	expression ^[0-9]*$ will not be included in the listing of
+	posts that are displayed in the browser. However, such
+	directories are still accessible when called directly via
+	an appropriately constructed URL.
+
+	A post's directory contains the following files and
+	directories (an example post's directory has been
+	included in this distribution):
+
+		body
+		date
+		img/
+		link
+		tags/
+		title
+
+	The img/ directory contains images uploaded to the
+	image board, including the original image and a
+	thumbnail version, resized to no greater than 500
+	pixels wide and 600 pixels tall.
+
+	The tags/ directory contains one empty file named
+	for each tag associated with the post.
+
+	The site root contains a file named tags that is compr-
+	ised of an index of the tags associated with each post.
+	This index is consulted when searching for a given tag in
+	the web browser.
+
+UTILS
+	bin/gf
+		Parse Livejournal and Tumblr RSS feeds into
+		BARF posts. (Abandoned, may no longer work.)
+	bin/gk
+		Create a list of known tags in the site root in
+		a file named known_tags.
+	bin/gr
+		Parse Google Reader bundles into BARF posts.
+	bin/gt
+		Create an index of tags in the site root in a file
+		named tags.
+
+	For more information on these tools, read the source.
+
+ADMIN
+	Any tool that can create, alter, or delete flat files
+	and directories is sufficient to administer a BARF.
+
+	Web-based login and administration utilizes werc's
+	built-in user authentication:
+
+		http://domain.com/login
+
+	After login, links to edit and delete will appear in
+	each post's meta data.
+
+	Web-based administration requires that the src/
+	directory and its sub-directories are writable by
+	the web server process.
+
+REQUIREMENTS
+	Unix
+		Plan9port or 9base are required. Site type
+		image requires ImageMagick and curl. Site
+		type url also requires curl if the user employs
+		the option to download remote URLs. These
+		utilities may be swapped out for others by
+		altering the source.
+
+SOURCE
+	http://plan9.stanleylieber.com/werc/apps/barf.tgz
+	https://code.9front.org/hg/barf
+
+EXAMPLES
+	blog
+		http://read.stanleylieber.com
+		RSS feeds are converted by the utility rrss[0]
+		and stored as individual blog posts.
+	image
+		http://img.stanleylieber.com
+		Hybrid public/private image board. Requires
+		standard werc authentication to post, but all
+		posts are visible to the public.
+	paste
+		http://okturing.com
+		Public pastebin. No authentication required
+		to post.
+	url
+		http://url.stanleylieber.com
+		Private index of URL bookmarks, similar
+		in functionality to the old delicious.com.
+		(In fact, most of the index was imported
+		from delicious.)
+
+SEE ALSO
+	[0] https://code.9front.org/hg/rrss
+
+LICENSE
+	Public domain.
+
+BUGS
+	On Plan 9, if the web server process is run as user
+	none (typically the case), directories used for entering
+	posts or uploading/downloading files from the browser
+	must be set world writable. This could prove problematic
+	on multiuser systems.

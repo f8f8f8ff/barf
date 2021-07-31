@@ -1,0 +1,29 @@
+/* black */
+header { flex-basis: 99%; flex-shrink: 0; padding-left: 1em; padding-bottom: 1em; }
+header h3 { padding-bottom: 2px; }
+header a img { vertical-align: bottom; padding-top: 1em; }
+body { font-family: Helvetica, Verdana, Arial, 'Liberation Sans', FreeSans, sans-serif; background-color: #000000; color: #FFFFFF; }
+a { text-decoration: none; color: #FFFFFF; background-color: #000000;  font-weight: bold; }
+a:hover { text-decoration: none; background-color: #FFFFFF; color: #000000; }
+/* footer */
+footer > nav { margin-left: auto; padding: 1em; }
+
+/* fixed-width fonts */
+pre, code { white-space: pre-wrap!important; }
+pre, code, blockquote {
+	max-width: 100%!important;
+	font-family: Courier, 'Lucida Console','Courier New', Serif;
+}
+/* input */
+input, textarea, select, option {
+	font-family: Sans-Serif; 
+	font-size: 100%;
+	padding: 2px;
+	border-top: solid 1px #FFFFFF;
+	border-bottom: solid 1px #FFFFFF;
+	border-left: solid 1px #FFFFFF;
+	border-right: solid 1px #FFFFFF;
+	background-color: #000000;
+	color: #FFFFFF;
+	margin: 2px;
+}

@@ -1,0 +1,455 @@
+#!/bin/rc
+# Parse XML RSS feeds from Yahoo Pipes into BARF blog posts
+# for the specified site. If a post with a matching _link_ already
+# exists, no new post will be created for that item. Accordingly,
+# the gy script may run slowly for sites with a large number of
+# existing posts. Tags will be created according to the rules
+# defined in the get_tags() function.
+#
+# Requires 20h's xmlpull and rssread.
+rfork en
+switch($1){
+case read
+	feed='http://pipes.yahoo.com/pipes/pipe.run?_id=d1f7146306b019d96d768facf95eebd9&_render=rss'
+	site=read.stanleylieber.com
+	tags=()
+case *
+	echo 'Usage: gy [ ... ]' >[1=2]
+	exit usage
+}
+
+file=/tmp/gy.$1
+werc=/usr/sl/www/werc
+
+if(test -f /boot/factotum)
+	cmd=hget
+if not
+	cmd='curl -s'
+
+fn cram{
+	ssam '
+,s/^link:.*$/HJDIVIDER&HJDIVIDER/g
+,s/^title:.*$/HJDIVIDER&HJDIVIDER/g
+,s/\n//g
+,s/HJDIVIDERtitle:/\n&/g
+	'
+}
+
+fn scape{
+	ssam '
+,s///g
+,s/\&quot;/\"/g
+,s/\&#34;/\"/g
+,s/\&amp;/\&/g
+,s/\&#38;/\&/g
+,s/\&#39;/''/g
+,s/\&#44;/,/g
+,s/\&#45;/-/g
+,s/\&#46;/\./g
+,s/\&#47;/\//g
+,s/\&#58;/:/g
+,s/\&#59;/;/g
+,s/\&lt;/</g
+,s/\&#60;/</g
+,s/\&#61;/=/g
+,s/\&gt;/>/g
+,s/\&#62;/>/g
+,s/\&#95;/_/g
+,s/\|/\&#124;/g
+	'
+}
+
+fn get_posts{
+	$"cmd $feed | rssread | cram | scape >$file
+	echo >>$file
+}
+
+fn get_tags{
+	switch($a_link){
+	case *1oct1993*
+		tags=($tags 1oct1993)
+	case *9front*
+		tags=($tags software plan9 9front)
+	case *organicmentalcore* 
+		tags=($tags aleks)
+	case *amyearles* *etsy.com* *pushedunder* *seaglass* *woolandwater*
+		tags=($tags amy_earles)
+	case *animenewsnetwork*
+		tags=($tags telescreen anime)
+	case *spikejapan*
+		tags=($tags japan comics manga telescreen anime)
+	case *augmented.org*
+		tags=($tags augmented.org ar)
+	case *ArchDaily* *archdaily*
+		tags=($tags archdaily architecture)
+	case *bldgblog*
+		tags=($tags bldgblog architecture)
+	case *kazuyosejima*
+		tags=($tags japan architecture)
+	case *Minimalissimo*
+		tags=($tags minimalissimo design architecture)
+	case *ArtFagCity* *ArtFCity* *artfagcity*
+		tags=($tags artfagcity art)
+	case *rhizome-fp*
+		tags=($tags rhizome-fp art)
+	case *rhizome*
+		tags=($tags rhizome art)
+	case *starwarsmodern*
+		tags=($tags starwarsmodern art)
+	case *tokyoartbeat*
+		tags=($tags tokyoartbeat japan art)
+	case *trendbeheer*
+		tags=($tags trendbeheer art)
+	case *ValentinaTanni*
+		tags=($tags valentinatanni art)
+	case *vvork*
+		tags=($tags vwork art)
+	case *auriea* *tale-of-tales* *taleoftales*
+		tags=($tags auriea)
+	case *basscomm* *closeoutwarrior* *crummysocks* *gamerrelocationproject* *protipoftheday* *PushButtonB* *pushbuttonb*
+		tags=($tags video_games basscomm)
+	case *benjaminmarra*
+		tags=($tags comics benjamin_marra)
+	case *boingboing*
+		tags=($tags boingboing)
+	case *bushinbooks* *henka*
+		tags=($tags budo)
+	case *alexaanddave* *CEREBUS* *Cerebus* *cerebus* *davesim* *gerhard*
+		tags=($tags comics cerebus gerhard)
+	case *coilhouse*
+		tags=($tags coilhouse)
+	case *arche-arc*
+		tags=($tags arche comics)
+	case *bitolithic.com*
+		tags=($tags bitolithic comics)
+	case *blaiselarmee*
+		tags=($tags blaise_larmee comics)
+	case *bleedingcool*
+		tags=($tags bleedingcool comics)
+	case *bobgreenberger*
+		tags=($tags bob_greengerger comics)
+	case *coldheatcomics*
+		tags=($tags coldheat comics)
+	case *comicbookresources*
+		tags=($tags cbr comics)
+	case *comicsbeat*
+		tags=($tags comicsbeat comics)
+	case *ComicsComics* *comicscomics*
+		tags=($tags comicscomics comics)
+	case *coveredblog*
+		tags=($tags coveredblog comics)
+	case *dcfifty-too*
+		tags=($tags dcfifty-too comics)
+	case *Destructoid* *destructoid*
+		tags=($tags destructoid video_games)
+	case *economist.com*
+		tags=($tags economist)
+	case *brucesterling.tumblr.com*
+		tags=($tags bruce_sterling)
+	case *thecreatorsproject*
+		tags=($tags thecreatorsproject)
+	case *ferrandelgado*
+		tags=($tags ferran_delgado comics)
+	case *eddiecampbell*
+		tags=($tags eddie_campbell comics)
+	case *factualopinion*
+		tags=($tags factualopinion comics)
+	case *floating_world* *floatingworld*
+		tags=($tags floating_world comics)
+	case *frankmiller*
+		tags=($tags frank_miller comics)
+	case *humancolor*
+		tags=($tags humancolor comics)
+	case *jerkcity*
+		tags=($tags jerkcity comics)
+	case *maakies.com*
+		tags=($tags tony_millionaire maakies comics)
+	case *newconstructionblog*
+		tags=($tags newconstruction manga comics)
+	case *ohdannyboy*
+		tags=($tags ohdannyboy comics)
+	case *pulphope*
+		tags=($tags pulphope comics)
+	case *pwbeat*
+		tags=($tags pwbeat comics)
+	case *reliablecomics*
+		tags=($tags reliablecomics comics)
+	case *reneefrench*
+		tags=($tags renee_french comics)
+	case *rickveitch*
+		tags=($tags rick_veitch comics)
+	case *royalboiler*
+		tags=($tags royalboiler comics)
+	case *smbc-comics*
+		tags=($tags smbc comics)
+	case *studygroup*
+		tags=($tags studygroup comics)
+	case *xkcd*
+		tags=($tags xkcd comics)
+	case *bowiesongs* *DavidBowie* *davidbowie*
+		tags=($tags music david_bowie)
+	case *designboom*
+		tags=($tags designboom design)
+	case *dezeen*
+		tags=($tags dezeen design)
+	case *infosthetics*
+		tags=($tags infosthetics design)
+	case *inhabitat*
+		tags=($tags inhabitat architecture design)
+	case *luigicolani*
+		tags=($tags luigicolani design)
+	case *mocoloco*
+		tags=($tags mocoloco design)
+	case *sydmead*
+		tags=($tags sydmead design)
+	case *dzima*
+		tags=($tags dzima)
+	case *bbcicecream*
+		tags=($tags bbcicecream fashion)
+	case *DamStyle *damstyle*
+		tags=($tags damstyle fashion)
+	case *facehunter*
+		tags=($tags facehunter fashion)
+	case *StilInBerlin* *Stilinberlin*
+		tags=($tags germany fashion)
+	case *jstreets*
+		tags=($tags jstreets japan fashion)
+	case *stylefromtokyo*
+		tags=($tags stylefromtokyo japan fashion)
+	case *tokyofashion*
+		tags=($tags tokyofashion japan fashion)
+	case *flames.gif* *flamesgif*
+		tags=($tags flames.gif)
+	case *contemporary-home-computing*
+		tags=($tags software flames.gif)
+	case *acceler8or.com*
+		tags=($tags acceler8or future)
+	case *afrocyberpunk.wordpress.com*
+		tags=($tags afrocyberpunk future)
+	case *hyperallergic.com*
+		tags=($tags hyperallergic future)
+	case *kurzweil*
+		tags=($tags kurzweil future)
+	case *longnow*
+		tags=($tags longnow future)
+	case *OpenTheFuture*
+		tags=($tags openthefuture future)
+	case *theverge.com*
+		tags=($tags theverge future)
+	case *golang* *blog.nella.org*
+		tags=($tags golang)
+	case *googlepluses*
+		tags=($tags google)
+	case *news.ycombinator.com*
+		tags=($tags hackernews hack)
+	case *seanbonner*
+		tags=($tags sean_bonner hack)
+	case *banriman*
+		tags=($tags banriman japan)
+	case *japansubculture*
+		tags=($tags japansubculture japan)
+	case *jeansnow*
+		tags=($tags jeansnow japan)
+	case *Kotaku* *kotaku*
+		tags=($tags kotaku video_games)
+	case *eforemario*
+		tags=($tags before_mario video_games)
+	case *instagram* *web.stagram.com*
+		tags=($tags instagram)
+	case *nakakobooks*
+		tags=($tags books nakakobooks japan)
+	case *ozawamaria*
+		tags=($tags maria_ozawa japan)
+	case *Shibuya246*
+		tags=($tags shibuya246 japan)
+	case *shisaku.blogspot.com*
+		tags=($tags shisaku japan)
+	case *jimshooter*
+		tags=($tags comics jim_shooter)
+	case *LettersOfNote* *lettersofnote*
+		tags=($tags letters)
+	case *nasa*letters.rss*
+		tags=($tags nasa letters)
+	case *kore.livejournal.com*
+		tags=($tags kore livejournal)
+	case *real-funny-lady.livejournal.com*
+		tags=($tags rea_funny_lady livejournal)
+	case *vintage-ads.livejournal.com*
+		tags=($tags vintage_ads livejournal)
+	case *hellodamage*
+		tags=($tags comics hellodamage manga)
+	case *manganews*
+		tags=($tags comics manganews manga)
+	case *naokiurasawa*
+		tags=($tags comics naokiurasawa manga)
+	case *samehat*
+		tags=($tags comics samehat manga)
+	case *mangatraders*
+		tags=($tags p2p comics manga)
+	case *hortonheardawho*
+		tags=($tags hortonheardawho flickr nasa mars)
+	case *marstoday.com*
+		tags=($tags marstoday mars)
+	case *kielbryant*
+		tags=($tags kiel_bryant flickr)
+	case *flickr*paoru*
+		tags=($tags paoru flickr)
+	case *me-vs-gutenberg* *mevsgutenberg*
+		tags=($tags martin_sand)
+	case *marxy*
+		tags=($tags marxy)
+	case *etamodern*
+		tags=($tags metamodern)
+	case *aviationintel*
+		tags=($tags aviationintel mil)
+	case *aviationweek*
+		tags=($tags aviationweek mil)
+	case *codeonemagazine*
+		tags=($tags codeonemagazine mil)
+	case *geimint*
+		tags=($tags geimint mil)
+	case *momus* *mrstsk*
+		tags=($tags books music momus)
+	case *bjork*
+		tags=($tags bjork music)
+	case *c-h-r-i-s-c-a-r-t-e-r*
+		tags=($tags chris_carter music)
+	case *toog*
+		tags=($tags toog music)
+	case *nasa.gov*
+		tags=($tags space nasa)
+	case *mongoliad*
+		tags=($tags neal_stephenson)
+	case *gaiman*
+		tags=($tags comics neil_gaiman)
+	case *111567547782666546187*
+		tags=($tags daniel_rehn gplus)
+	case *114408853762245370512*
+		tags=($tags francesco_cardi gplus)
+	case *106673611724400311137*
+		tags=($tags mark_jondahl gplus)
+	case *113974084460235989118*
+		tags=($tags jose_nazario gplus)
+	case *102089697005520721324*
+		tags=($tags zaki_hasan gplus)
+	case *nin.com* *feeds.nin.com*
+		tags=($tags music nin.com nin)
+	case *ninofficialnews.tumblr.com*
+		tags=($tags music tumblr nin)
+	case *nix-os* *syssoftware*
+		tags=($tags plan9 nix)
+	case *bsdly* *OPENBSD* *OpenBSD* *openbsd* *scientist-home* *undeadly*
+		tags=($tags software openbsd)
+	case *godownmatthew* *mysticmilk* *petetoms*
+		tags=($tags pete_toms)
+	case *Pitchfork* *pitchfork*
+		tags=($tags music pitchfork)
+	case *9gridchan* *cat-v* *maht0x0r* *Plan9* *plan9*
+		tags=($tags software plan9)
+	case *FlauntTalks* *prince.org* *purpleinterviews* *wendyandlisa*
+		tags=($tags music prince)
+	case *101960720994009339267*
+		tags=($tags gplus rob_pike)
+	case *commandcenter* *rob_pike*
+		tags=($tags blogger rob_pike)
+	case *prometheus*
+		tags=($tags telescreen prometheus)
+	case *reddit.com*
+		tags=($tags reddit)
+	case *swtch.com*
+		tags=($tags golang plan9 rsc)
+	case *bunniestudios*
+		tags=($tags bunniestudios security)
+	case *jwz*
+		tags=($tags jwz security)
+	case *Krebs* *krebs*
+		tags=($tags krebs security)
+	case *scarybeastsecurity*
+		tags=($tags scarybeast security)
+	case *schneier*
+		tags=($tags bruce_schneier security)
+	case *chinchillakwak* *skwak*
+		tags=($tags skwak)
+	case *slashdot*
+		tags=($tags slashdot)
+	case *spaceref.com*
+		tags=($tags space spaceref)
+	case *StanleyLieber* *stanleylieber*
+		tags=($tags stanleylieber)
+	case *fastcompany*
+		tags=($tags fastcompany tech)
+	case *gizchina.com*
+		tags=($tags gizchina tech)
+	case *danharmon*
+		tags=($tags danharmon telescreen)
+	case *mindlessones*
+		tags=($tags mindlessones telescreen)
+	case *tcj.com*
+		tags=($tags comics tcj)
+	case *TEDBlog* *TEDblog* *ted.com*
+		tags=($tags ted)
+	case *ticom*
+		tags=($tags ticom security)
+	case *orrentfreak*
+		tags=($tags p2p torrentfreak)
+	case *ultra*culture*
+		tags=($tags ultraculture)
+	case *kleinletters*
+		tags=($tags comics todd_klein)
+	case *collectiondx.com*
+		tags=($tags collectiondx toys)
+	case *kennercollector.com*
+		tags=($tags kennercollector toys)
+	case *plaidstallions*
+		tags=($tags plaidstallions toys)
+	case *shojikawamori*
+		tags=($tags shojikawamori japan toys)
+	case *tumblr*
+		tags=($tags tumblr)
+	case *ruinedcartridge*
+		tags=($tags ruinedcartridge basscomm video_games)
+	}
+	echo -n $tags
+}
+
+fn parse_posts{
+	ifs='
+' {
+		posts=`{cat $file}
+		for(i in `{seq 1 $#posts | sort -nr}){
+			post=$posts($i)
+			if(! ~ $post ''){
+				a_title=`{echo $post | sed 's/^.*HJDIVIDERtitle: //g; s/HJDIVIDER.*$//g'}
+				a_date=`{date}
+				a_link=`{echo $post | sed 's/^.*HJDIVIDERlink:  //g; s/HJDIVIDER.*$//g'}
+				a_body=`{echo $post | sed 's/^.*HJDIVIDER//g; s/^.*HJDIVIDER//g; s/^.*HJDIVIDER//g'}
+				a_id=`{echo `{ls -p $werc/sites/$site/src | sort -n | tail -1}^+1 | bc}
+				if(~ $#a_id 0)
+					a_id=1
+				while(test -d $werc/sites/$site/src/$a_id)
+					a_id=`{echo $a_id^+1 | bc}
+				if(! ~ $"a_link '' && ! grep -s `{echo $"a_link | md5sum} $werc/sites/$site/links){
+					mkdir -p $werc/sites/$site/src/$a_id/tags # big fat race
+					echo $"a_title >$werc/sites/$site/src/$a_id/title
+					echo $"a_date >$werc/sites/$site/src/$a_id/date
+					echo $a_link(1) >$werc/sites/$site/src/$a_id/link
+					echo $a_link(1) | md5sum >>$werc/sites/$site/links
+					echo $"a_body '</a></li></ul>' >$werc/sites/$site/src/$a_id/body
+					ifs=' ' {
+						for(j in `{get_tags}){
+							>$werc/sites/$site/src/$a_id/tags/$j
+							echo $a_id/tags/$j >>$werc/sites/$site/tags
+						}
+					}
+				}
+				if(test -f /boot/factotum && ~ $site *.stanleylieber.com && test -d $werc/sites/$site/src/$a_id)
+					chmod +t $werc/sites/$site/src/$a_id $werc/sites/$site/src/$a_id $werc/sites/$site/src/$a_id $werc/sites/$site/src/$a_id/* $werc/sites/$site/src/$a_id $werc/sites/$site/src/$a_id/tags/*
+			}
+		}
+	}
+}
+
+if(test -f /boot/factotum && test -f /rc/bin/hget)
+	webfs
+get_posts
+parse_posts
